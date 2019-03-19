@@ -1,9 +1,9 @@
 defmodule ElixirExericses.RegistryTest do
   use ExUnit.Case, async: true
 
-  setup do
-    registry = start_supervised!(ElixirExercises.Registry)
-    %{registry: registry}
+  setup context do
+    _ = start_supervised!({ElixirExercises.Registry, name: context.test})
+    %{registry: context.test}
   end
 
   test "spawn buckets", %{registry: registry} do
@@ -20,6 +20,16 @@ defmodule ElixirExericses.RegistryTest do
     ElixirExercises.Registry.create(registry, "shopping")
     {:ok, bucket} = ElixirExercises.Registry.lookup(registry, "shopping")
     Agent.stop(bucket)
+    _ = ElixirExercises.Registry.create(registry, "bogus")
+    assert ElixirExercises.Registry.lookup(registry, "shopping") == :error
+  end
+
+  test "remove buckets on crash", %{registry: registry} do
+    ElixirExercises.Registry.create(registry, "shopping")
+    {:ok, bucket} = ElixirExercises.Registry.lookup(registry, "shopping")
+
+    Agent.stop(bucket, :shutdown)
+    _ = ElixirExercises.Registry.create(registry, "bogus")
     assert ElixirExercises.Registry.lookup(registry, "shopping") == :error
   end
 end

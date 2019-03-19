@@ -12,4 +12,8 @@ defmodule BucketTest do
     ElixirExercises.Bucket.put(bucket, "milk", 3)
     assert ElixirExercises.Bucket.get(bucket, "milk") == 3
   end
+
+  test "are temporary workers" do
+    assert Supervisor.child_spec(ElixirExercises.Bucket, []).restart == :temporary
+  end
 end
